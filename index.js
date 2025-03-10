@@ -1,24 +1,29 @@
 const express = require("express");
 const app = express();
 
-const PORT = process.env.PORT || 3000;
-const VERIFY_TOKEN = process.env.VERIFY_TOKEN || "my_secret_token_123"; // Ensure this matches your FB settings
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN || "my_secret_token_123";
+
+app.use(express.json());
 
 app.get("/webhook", (req, res) => {
-    const mode = req.query["hub.mode"];
-    const token = req.query["hub.verify_token"];
-    const challenge = req.query["hub.challenge"];
+    console.log("🔍 Incoming GET request to /webhook");
+    console.log("👉 Query Params:", req.query);
 
-    if (mode && token === VERIFY_TOKEN) {
+    let mode = req.query["hub.mode"];
+    let token = req.query["hub.verify_token"];
+    let challenge = req.query["hub.challenge"];
+
+    if (mode === "subscribe" && token === VERIFY_TOKEN) {
+        console.log("✅ Verification successful! Sending challenge:", challenge);
         res.status(200).send(challenge);
     } else {
+        console.log("❌ Verification failed! Invalid token or request.");
         res.status(403).send("Forbidden");
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
 
 
